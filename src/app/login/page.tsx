@@ -128,7 +128,7 @@ export default function LoginPage() {
               <MapPin className="w-7 h-7 lg:w-8 lg:h-8 text-white" />
             </div>
             <span className="text-2xl lg:text-3xl font-heading font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-              CivicFlow
+              CivicLink
             </span>
           </Link>
           

@@ -16,7 +16,7 @@ const config: Config = {
         'body': ['Inter', 'system-ui', 'sans-serif']
       },
       colors: {
-        // CivicFlow Green and Black Theme
+        // CivicLink Green and Black Theme
         primary: {
           50: '#f0fdf4',
           100: '#dcfce7',

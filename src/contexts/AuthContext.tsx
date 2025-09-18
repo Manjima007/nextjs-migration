@@ -36,8 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check for stored token on mount
     if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('civicflow_token');
-      const storedUser = localStorage.getItem('civicflow_user');
+      const storedToken = localStorage.getItem('civiclink_token');
+      const storedUser = localStorage.getItem('civiclink_user');
       
       if (storedToken && storedUser) {
         setToken(storedToken);
@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         setToken(data.token);
         if (typeof window !== 'undefined') {
-          localStorage.setItem('civicflow_token', data.token);
-          localStorage.setItem('civicflow_user', JSON.stringify(data.user));
+          localStorage.setItem('civiclink_token', data.token);
+          localStorage.setItem('civiclink_user', JSON.stringify(data.user));
         }
         return { success: true };
       } else {
@@ -96,8 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         setToken(data.token);
         if (typeof window !== 'undefined') {
-          localStorage.setItem('civicflow_token', data.token);
-          localStorage.setItem('civicflow_user', JSON.stringify(data.user));
+          localStorage.setItem('civiclink_token', data.token);
+          localStorage.setItem('civiclink_user', JSON.stringify(data.user));
         }
         return { success: true };
       } else {
@@ -115,8 +115,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setToken(null);
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('civicflow_token');
-      localStorage.removeItem('civicflow_user');
+      localStorage.removeItem('civiclink_token');
+      localStorage.removeItem('civiclink_user');
     }
   };
 
@@ -125,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const updatedUser = { ...user, ...userData };
       setUser(updatedUser);
       if (typeof window !== 'undefined') {
-        localStorage.setItem('civicflow_user', JSON.stringify(updatedUser));
+        localStorage.setItem('civiclink_user', JSON.stringify(updatedUser));
       }
     }
   };

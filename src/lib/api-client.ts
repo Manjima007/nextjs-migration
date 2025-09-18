@@ -2,7 +2,7 @@ class APIClient {
   private baseURL = '/api';
 
   private getAuthHeaders(): Record<string, string> {
-    const token = localStorage.getItem('civicflow_token');
+    const token = localStorage.getItem('civiclink_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
 
@@ -12,11 +12,18 @@ class APIClient {
     const config: RequestInit = {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
         ...this.getAuthHeaders(),
         ...(options.headers as Record<string, string>),
       },
     };
+
+    // Only set Content-Type for non-FormData requests
+    if (!(options.body instanceof FormData)) {
+      config.headers = {
+        'Content-Type': 'application/json',
+        ...config.headers,
+      };
+    }
 
     try {
       const response = await fetch(url, config);
@@ -62,7 +69,7 @@ class APIClient {
     create: (issueData: any) =>
       this.request('/issues', {
         method: 'POST',
-        body: JSON.stringify(issueData),
+        body: issueData instanceof FormData ? issueData : JSON.stringify(issueData),
       }),
 
     update: (id: string, updateData: any) =>

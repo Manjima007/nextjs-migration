@@ -16,10 +16,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
-    "/register/page": [
+    "/dashboard/regional-admin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/register/page.js"
+      "static/chunks/app/dashboard/regional-admin/page.js"
+    ],
+    "/api/issues/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/issues/route.js"
     ],
     "/api/auth/login/route": [
       "static/chunks/webpack.js",
@@ -31,15 +36,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/dashboard/citizen/page.js"
     ],
-    "/api/issues/route": [
+    "/dashboard/citizen/report/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/issues/route.js"
-    ],
-    "/_not-found/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/dashboard/citizen/report/page.js"
     ]
   }
 }

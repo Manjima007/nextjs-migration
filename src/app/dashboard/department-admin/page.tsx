@@ -64,7 +64,7 @@ export default function DepartmentAdminDashboard() {
       // Fetch department issues
       const issuesResponse = await fetch(`/api/issues?department=${user?.department}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civicflow_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
         }
       });
       

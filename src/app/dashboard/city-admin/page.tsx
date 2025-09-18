@@ -66,7 +66,7 @@ export default function CityAdminDashboard() {
       // Fetch city-wide issues
       const issuesResponse = await fetch('/api/issues', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civicflow_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
         }
       });
       

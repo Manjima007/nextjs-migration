@@ -37,7 +37,7 @@ export default function HomePage() {
                 <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <span className="text-xl sm:text-2xl font-heading font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-                CivicFlow
+                CivicLink
               </span>
             </motion.div>
             
@@ -120,7 +120,7 @@ export default function HomePage() {
               className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 max-w-5xl mx-auto"
             >
               <motion.div variants={fadeInUp}>
-                <StatsCard number="500+" label="Cities Using CivicFlow" />
+                <StatsCard number="500+" label="Cities Using CivicLink" />
               </motion.div>
               <motion.div variants={fadeInUp}>
                 <StatsCard number="2.5M+" label="Issues Resolved" />
@@ -216,7 +216,7 @@ export default function HomePage() {
             className="text-center mb-16"
           >
             <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
-              How CivicFlow Works
+              How CivicLink Works
             </h2>
             <p className="text-xl text-gray-400 max-w-3xl mx-auto">
               Simple, intuitive workflow designed for maximum efficiency
@@ -272,12 +272,12 @@ export default function HomePage() {
               Ready to Transform Your City?
             </h2>
             <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto font-body">
-              Join hundreds of cities already using CivicFlow to improve citizen services and operational efficiency.
+              Join hundreds of cities already using CivicLink to improve citizen services and operational efficiency.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/register">
                 <Button size="lg" className="btn-primary text-lg px-8 py-4 group">
-                  Start Your Free Trial
+                   Start
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -301,7 +301,7 @@ export default function HomePage() {
                   <MapPin className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-heading font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-                  CivicFlow
+                  CivicLink
                 </span>
               </div>
               <p className="text-gray-400 mb-4">
@@ -342,7 +342,7 @@ export default function HomePage() {
           
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm font-body">
-              © 2024 CivicFlow. All rights reserved.
+              © 2024 CivicLink. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
               <Link href="/privacy" className="text-gray-400 hover:text-primary-400 text-sm">Privacy Policy</Link>

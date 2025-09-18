@@ -3,10 +3,10 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "CivicFlow - Smart Civic Issue Management",
-  description: "Transform your city with intelligent issue tracking, reporting, and resolution. CivicFlow connects citizens, field workers, and administrators for efficient civic management.",
+  title: "CivicLink - Smart Civic Issue Management",
+  description: "Transform your city with intelligent issue tracking, reporting, and resolution. CivicLink connects citizens, field workers, and administrators for efficient civic management.",
   keywords: ["civic management", "issue tracking", "city administration", "smart city", "citizen engagement"],
-  authors: [{ name: "CivicFlow Team" }],
+  authors: [{ name: "CivicLink Team" }],
   viewport: "width=device-width, initial-scale=1",
 };
 

@@ -8,7 +8,25 @@ import { z } from 'zod';
 const createIssueSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
   description: z.string().min(1, 'Description is required').max(2000, 'Description must be less than 2000 characters'),
-  category: z.enum(['sanitation', 'infrastructure', 'utilities', 'traffic', 'environment', 'safety', 'other']),
+  category: z.enum([
+    'water_supply',
+    'sanitation', 
+    'road_maintenance',
+    'street_lighting',
+    'drainage',
+    'traffic',
+    'public_safety',
+    'parks_recreation',
+    'noise_pollution',
+    'air_quality',
+    'electricity',
+    'other',
+    // Legacy categories for backwards compatibility
+    'infrastructure', 
+    'utilities', 
+    'environment', 
+    'safety'
+  ]),
   priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
   department: z.string().min(1, 'Department is required'),
   location: z.object({
@@ -20,6 +38,11 @@ const createIssueSchema = z.object({
   }),
   images: z.array(z.string()).default([]),
   ward: z.string().min(1, 'Ward is required'),
+  contactInfo: z.object({
+    phone: z.string().optional(),
+    preferredContact: z.string().optional(),
+  }).nullable().optional(),
+  isAnonymous: z.boolean().optional(),
 });
 
 // GET /api/issues - Get issues with filters
@@ -107,8 +130,68 @@ async function createIssue(req: NextRequest & { user?: any }) {
   try {
     await connectDB();
 
-    const body = await req.json();
-    const validatedData = createIssueSchema.parse(body);
+    let body: any;
+    let images: File[] = [];
+
+    // Check if the request contains FormData (with files)
+    const contentType = req.headers.get('content-type') || '';
+    
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData for file uploads
+      const formData = await req.formData();
+      
+      body = {
+        title: formData.get('title') as string,
+        description: formData.get('description') as string,
+        category: formData.get('category') as string,
+        priority: formData.get('priority') as string,
+        location: JSON.parse(formData.get('location') as string),
+        contactNumber: formData.get('contactNumber') as string,
+        isAnonymous: formData.get('isAnonymous') === 'true',
+      };
+
+      // Extract uploaded images
+      const imageFiles = formData.getAll('images') as File[];
+      images = imageFiles.filter(file => file.size > 0);
+      
+    } else {
+      // Handle regular JSON request
+      body = await req.json();
+    }
+
+    // Convert location format if needed
+    if (body.location && !body.location.address) {
+      return NextResponse.json(
+        { error: 'Location address is required' },
+        { status: 400 }
+      );
+    }
+
+    // Prepare issue data with proper location format
+    const issueData = {
+      title: body.title,
+      description: body.description,
+      category: body.category,
+      priority: body.priority || 'medium',
+      department: getDepartmentFromCategory(body.category),
+      location: {
+        address: body.location.address,
+        coordinates: {
+          latitude: body.location.lat || 0,
+          longitude: body.location.lng || 0,
+        },
+      },
+      images: [], // We'll process images separately for now
+      ward: req.user.ward || 'Ward-1', // Default ward if not specified
+      contactInfo: body.isAnonymous ? null : {
+        phone: body.contactNumber,
+        preferredContact: 'phone'
+      },
+      isAnonymous: body.isAnonymous || false,
+    };
+
+    // Validate the data
+    const validatedData = createIssueSchema.parse(issueData);
 
     // Only citizens can create issues directly
     if (req.user.role !== 'citizen') {
@@ -169,6 +252,26 @@ async function createIssue(req: NextRequest & { user?: any }) {
       { status: 500 }
     );
   }
+}
+
+// Helper function to map categories to departments
+function getDepartmentFromCategory(category: string): string {
+  const categoryToDepartment: Record<string, string> = {
+    'water_supply': 'Water Department',
+    'sanitation': 'Sanitation Department',
+    'road_maintenance': 'Public Works Department',
+    'street_lighting': 'Electrical Department',
+    'drainage': 'Water Department',
+    'traffic': 'Traffic Police',
+    'public_safety': 'Security Department',
+    'parks_recreation': 'Parks Department',
+    'noise_pollution': 'Environmental Department',
+    'air_quality': 'Environmental Department',
+    'electricity': 'Electrical Department',
+    'other': 'General Administration'
+  };
+  
+  return categoryToDepartment[category] || 'General Administration';
 }
 
 export const GET = withAuth(getIssues);

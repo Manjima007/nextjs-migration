@@ -84,7 +84,7 @@ export default function RegisterPage() {
       const result = await authRegister(data);
       
       if (result.success) {
-        toast.success('Registration successful! Welcome to CivicFlow!');
+        toast.success('Registration successful! Welcome to CivicLink!');
         // Router redirect will be handled by useEffect above
       } else {
         toast.error(result.error || 'Registration failed');
@@ -113,7 +113,7 @@ export default function RegisterPage() {
               <MapPin className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             <span className="text-xl sm:text-2xl font-heading font-bold bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent">
-              CivicFlow
+              CivicLink
             </span>
           </Link>
           
@@ -121,7 +121,7 @@ export default function RegisterPage() {
             Create Your Account
           </h1>
           <p className="text-gray-400 font-body">
-            Join CivicFlow to help improve your community
+            Join CivicLink to help improve your community
           </p>
         </motion.div>
 

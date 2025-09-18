@@ -53,7 +53,7 @@ export default function FieldWorkerDashboard() {
     try {
       const response = await fetch('/api/issues?assignedTo=me', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civicflow_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
         }
       });
       
@@ -100,7 +100,7 @@ export default function FieldWorkerDashboard() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('civicflow_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
         },
         body: JSON.stringify({ status: newStatus })
       });
