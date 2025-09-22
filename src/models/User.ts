@@ -5,7 +5,7 @@ export interface IUser extends mongoose.Document {
   name: string;
   email: string;
   password: string;
-  role: 'citizen' | 'field_worker' | 'department_admin' | 'regional_admin' | 'city_admin';
+  role: 'citizen' | 'field_worker' | 'department_admin' | 'regional_admin' | 'city_admin' | 'super_admin';
   phone?: string;
   address?: string;
   department?: string; // For workers and admins
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['citizen', 'field_worker', 'department_admin', 'regional_admin', 'city_admin'],
+    enum: ['citizen', 'field_worker', 'department_admin', 'regional_admin', 'city_admin', 'super_admin'],
     required: [true, 'Role is required'],
     default: 'citizen',
   },

@@ -7,6 +7,7 @@ import { DashboardStatsCard } from '@/components/ui/dashboard-stats-card';
 import { 
   Globe2, 
   Users, 
+  User,
   TrendingUp, 
   Shield,
   AlertTriangle,
@@ -48,7 +49,7 @@ interface SuperAdminStats {
   performanceScore: number;
 }
 
-interface User {
+interface AppUser {
   _id: string;
   name: string;
   email: string;
@@ -104,7 +105,7 @@ export default function SuperAdminDashboard() {
     performanceScore: 0
   });
   
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<AppUser[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetric[]>([]);
   const [securityAlerts, setSecurityAlerts] = useState<SecurityAlert[]>([]);
@@ -116,7 +117,7 @@ export default function SuperAdminDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showUserModal, setShowUserModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null);
 
   const fetchSuperAdminData = useCallback(async () => {
     try {
@@ -236,7 +237,7 @@ export default function SuperAdminDashboard() {
     if (user) {
       fetchSuperAdminData();
     }
-  }, [user, loading, router, fetchSuperAdminData]);
+  }, [user, loading, router]); // Removed fetchSuperAdminData from dependencies
 
   // Utility functions
   const getRoleColor = (role: string) => {
@@ -345,28 +346,24 @@ export default function SuperAdminDashboard() {
             value={stats.totalUsers.toLocaleString()}
             icon={<Users className="h-6 w-6" />}
             color="blue"
-            subtitle="Across all cities"
           />
           <DashboardStatsCard
             title="Active Cities"
             value={stats.totalCities}
             icon={<Building2 className="h-6 w-6" />}
             color="green"
-            subtitle="Using CivicLink"
           />
           <DashboardStatsCard
             title="Total Issues"
             value={stats.totalIssues.toLocaleString()}
             icon={<FileText className="h-6 w-6" />}
             color="purple"
-            subtitle="Platform-wide"
           />
           <DashboardStatsCard
             title="System Uptime"
             value={formatUptime(stats.systemUptime)}
             icon={<Activity className="h-6 w-6" />}
-            color="orange"
-            subtitle="Last 30 days"
+            color="yellow"
           />
         </div>
 
@@ -376,29 +373,25 @@ export default function SuperAdminDashboard() {
             title="Active Connections"
             value={stats.activeConnections.toLocaleString()}
             icon={<Globe2 className="h-6 w-6" />}
-            color="indigo"
-            subtitle="Current sessions"
+            color="blue"
           />
           <DashboardStatsCard
             title="Data Processed"
             value={formatDataSize(stats.dataProcessed)}
             icon={<Database className="h-6 w-6" />}
-            color="teal"
-            subtitle="Today"
+            color="green"
           />
           <DashboardStatsCard
             title="Security Threats"
             value={stats.securityThreats}
             icon={<Shield className="h-6 w-6" />}
             color="red"
-            subtitle="Active threats"
           />
           <DashboardStatsCard
             title="Performance Score"
             value={`${stats.performanceScore}%`}
             icon={<TrendingUp className="h-6 w-6" />}
             color="green"
-            subtitle="Overall system"
           />
         </div>
 

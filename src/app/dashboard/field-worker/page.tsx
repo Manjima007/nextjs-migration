@@ -1,55 +1,58 @@
-'use client';
+﻿'use client';
 
-import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { DashboardStatsCard } from '@/components/ui/dashboard-stats-card';
+import { useState, useEffect } from 'react';
 import { 
   CheckCircle, 
   Clock, 
+  AlertCircle, 
   MapPin, 
-  AlertTriangle, 
-  Camera,
-  Route,
-  Users,
-  TrendingUp 
+  Calendar,
+  User,
+  Wrench
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 
 interface Issue {
   _id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in_progress' | 'resolved';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  category: string;
   location: {
     address: string;
-    coordinates: [number, number];
-  };
-  reporter: {
+    coordinates: {
+      latitude: number;
+      longitude: number;
+    };
+  } | string; // Support both formats for compatibility
+  status: 'pending' | 'in_progress' | 'resolved' | 'rejected';
+  priority: 'low' | 'medium' | 'high';
+  department: string;
+  createdAt: string;
+  assignedTo?: string;
+  reportedBy: {
     name: string;
     email: string;
   };
-  assignedTo?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export default function FieldWorkerDashboard() {
   const { user, loading } = useAuth();
-  const router = useRouter();
   const [issues, setIssues] = useState<Issue[]>([]);
+  const [isLoadingIssues, setIsLoadingIssues] = useState(true);
   const [stats, setStats] = useState({
-    assigned: 0,
+    total: 0,
+    pending: 0,
     inProgress: 0,
-    completed: 0,
-    todayCompleted: 0
+    resolved: 0
   });
-  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchAssignedIssues = useCallback(async () => {
+  useEffect(() => {
+    if (user) {
+      fetchAssignedIssues();
+    }
+  }, [user]);
+
+  const fetchAssignedIssues = async () => {
     try {
       const response = await fetch('/api/issues?assignedTo=me', {
         headers: {
@@ -60,38 +63,21 @@ export default function FieldWorkerDashboard() {
       if (response.ok) {
         const data = await response.json();
         setIssues(data.issues || []);
-        calculateStats(data.issues || []);
+        
+        // Calculate stats
+        const total = data.issues?.length || 0;
+        const pending = data.issues?.filter((issue: Issue) => issue.status === 'pending').length || 0;
+        const inProgress = data.issues?.filter((issue: Issue) => issue.status === 'in_progress').length || 0;
+        const resolved = data.issues?.filter((issue: Issue) => issue.status === 'resolved').length || 0;
+        
+        setStats({ total, pending, inProgress, resolved });
       }
     } catch (error) {
       console.error('Error fetching issues:', error);
+      setIssues([]);
     } finally {
-      setIsLoading(false);
+      setIsLoadingIssues(false);
     }
-  }, []);
-
-  useEffect(() => {
-    if (!loading && (!user || user.role !== 'field_worker')) {
-      router.push('/login');
-      return;
-    }
-
-    if (user) {
-      fetchAssignedIssues();
-    }
-  }, [user, loading, router, fetchAssignedIssues]);
-
-  const calculateStats = (issuesList: Issue[]) => {
-    const today = new Date().toDateString();
-    
-    setStats({
-      assigned: issuesList.length,
-      inProgress: issuesList.filter(issue => issue.status === 'in_progress').length,
-      completed: issuesList.filter(issue => issue.status === 'resolved').length,
-      todayCompleted: issuesList.filter(issue => 
-        issue.status === 'resolved' && 
-        new Date(issue.updatedAt).toDateString() === today
-      ).length
-    });
   };
 
   const updateIssueStatus = async (issueId: string, newStatus: string) => {
@@ -106,187 +92,179 @@ export default function FieldWorkerDashboard() {
       });
 
       if (response.ok) {
-        await fetchAssignedIssues(); // Refresh the data
+        // Refresh the issues list
+        fetchAssignedIssues();
       }
     } catch (error) {
       console.error('Error updating issue status:', error);
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'critical': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const getLocationString = (location: { address: string; coordinates: { latitude: number; longitude: number; } } | string): string => {
+    if (typeof location === 'string') {
+      return location;
     }
+    return location?.address || 'Location not specified';
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'resolved': return 'text-green-600 bg-green-100';
-      case 'in_progress': return 'text-blue-600 bg-blue-100';
-      case 'pending': return 'text-orange-600 bg-orange-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'pending': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+      case 'in_progress': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+      case 'resolved': return 'text-green-400 bg-green-400/10 border-green-400/20';
+      case 'rejected': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
     }
   };
 
-  if (loading || isLoading) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'text-red-400';
+      case 'medium': return 'text-yellow-400';
+      case 'low': return 'text-green-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  if (loading) {
     return (
       <DashboardLayout title="Field Worker Dashboard">
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
         </div>
       </DashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout title="Field Worker Dashboard"
-      description="Manage your assigned issues and track work progress"
-    >
+    <DashboardLayout title="Field Worker Dashboard" description="Manage your assigned issues">
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Field Worker Dashboard</h1>
-            <p className="text-gray-600 mt-2">
-              Manage your assigned issues and track work progress
-            </p>
-          </div>
-          <div className="flex items-center space-x-2 mt-4 md:mt-0">
-            <span className="text-sm text-gray-500">Department:</span>
-            <span className="font-medium text-gray-900">{user?.department || 'Not assigned'}</span>
+        {/* Welcome Section */}
+        <div className="bg-dark-800 rounded-xl p-6 border border-gray-700">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl flex items-center justify-center">
+              <Wrench className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-white">Welcome back, {user?.name}!</h2>
+              <p className="text-gray-400">Department: {user?.department || 'General Services'}</p>
+            </div>
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <DashboardStatsCard
-            title="Assigned Issues"
-            value={stats.assigned}
-            icon={<CheckCircle className="h-6 w-6" />}
-            color="blue"
-          />
-          <DashboardStatsCard
-            title="In Progress"
-            value={stats.inProgress}
-            icon={<Clock className="h-6 w-6" />}
-            color="yellow"
-          />
-          <DashboardStatsCard
-            title="Completed"
-            value={stats.completed}
-            icon={<TrendingUp className="h-6 w-6" />}
-            color="green"
-          />
-          <DashboardStatsCard
-            title="Today's Completed"
-            value={stats.todayCompleted}
-            icon={<Users className="h-6 w-6" />}
-            color="purple"
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <MapPin className="h-4 w-4" />
-            <span>View Map</span>
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Camera className="h-4 w-4" />
-            <span>Quick Photo Report</span>
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
-          >
-            <Route className="h-4 w-4" />
-            <span>Optimize Route</span>
-          </motion.button>
-        </div>
-
-        {/* Assigned Issues */}
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">Assigned Issues</h2>
-            <p className="text-gray-600 mt-1">Issues assigned to you for resolution</p>
+          <div className="bg-dark-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-400">Total Issues</p>
+                <p className="text-2xl font-bold text-white">{stats.total}</p>
+              </div>
+              <User className="w-8 h-8 text-gray-400" />
+            </div>
           </div>
-          
-          {issues.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No issues assigned to you yet.</p>
+
+          <div className="bg-dark-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-400">Pending</p>
+                <p className="text-2xl font-bold text-yellow-400">{stats.pending}</p>
+              </div>
+              <Clock className="w-8 h-8 text-yellow-400" />
+            </div>
+          </div>
+
+          <div className="bg-dark-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-400">In Progress</p>
+                <p className="text-2xl font-bold text-blue-400">{stats.inProgress}</p>
+              </div>
+              <AlertCircle className="w-8 h-8 text-blue-400" />
+            </div>
+          </div>
+
+          <div className="bg-dark-800 rounded-xl p-6 border border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-400">Resolved</p>
+                <p className="text-2xl font-bold text-green-400">{stats.resolved}</p>
+              </div>
+              <CheckCircle className="w-8 h-8 text-green-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Issues List */}
+        <div className="bg-dark-800 rounded-xl border border-gray-700">
+          <div className="p-6 border-b border-gray-700">
+            <h3 className="text-lg font-semibold text-white">Assigned Issues</h3>
+            <p className="text-sm text-gray-400">Manage and update your assigned issues</p>
+          </div>
+
+          {isLoadingIssues ? (
+            <div className="p-6 flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+            </div>
+          ) : issues.length === 0 ? (
+            <div className="p-6 text-center">
+              <p className="text-gray-400">No issues assigned to you yet.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-700">
               {issues.map((issue) => (
-                <motion.div
-                  key={issue._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-6 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div key={issue._id} className="p-6">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-medium text-gray-900">{issue.title}</h3>
-                        <div className="flex items-center space-x-2 ml-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(issue.priority)}`}>
-                            {issue.priority}
-                          </span>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(issue.status)}`}>
-                            {issue.status.replace('_', ' ')}
-                          </span>
-                        </div>
+                      <div className="flex items-center space-x-3 mb-2">
+                        <h4 className="font-semibold text-white">{issue.title}</h4>
+                        <span className={`px-2 py-1 text-xs rounded-full border ${getStatusColor(issue.status)}`}>
+                          {issue.status.replace('_', ' ')}
+                        </span>
+                        <span className={`text-xs font-medium ${getPriorityColor(issue.priority)}`}>
+                          {issue.priority.toUpperCase()}
+                        </span>
                       </div>
                       
-                      <p className="text-gray-600 mb-3">{issue.description}</p>
+                      <p className="text-gray-300 text-sm mb-3">{issue.description}</p>
                       
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 text-sm text-gray-400">
                         <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{issue.location.address}</span>
+                          <MapPin className="w-4 h-4" />
+                          <span>{getLocationString(issue.location)}</span>
                         </div>
-                        <div>Category: {issue.category}</div>
-                        <div>Reporter: {issue.reporter.name}</div>
+                        <div className="flex items-center space-x-1">
+                          <Calendar className="w-4 h-4" />
+                          <span>{new Date(issue.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <User className="w-4 h-4" />
+                          <span>Reporter: {issue.reportedBy.name}</span>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-center space-x-2 mt-4 md:mt-0 md:ml-6">
+
+                    <div className="ml-4 space-y-2">
                       {issue.status === 'pending' && (
                         <button
                           onClick={() => updateIssueStatus(issue._id, 'in_progress')}
-                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700 transition-colors"
+                          className="px-3 py-1 text-xs bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                         >
                           Start Work
                         </button>
                       )}
+                      
                       {issue.status === 'in_progress' && (
                         <button
                           onClick={() => updateIssueStatus(issue._id, 'resolved')}
-                          className="bg-green-600 text-white px-3 py-1 rounded text-sm hover:bg-green-700 transition-colors"
+                          className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
                         >
-                          Mark Complete
+                          Mark Resolved
                         </button>
                       )}
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        View Details
-                      </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           )}

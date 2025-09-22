@@ -4,7 +4,7 @@ export interface IIssue extends mongoose.Document {
   _id: string;
   title: string;
   description: string;
-  category: 'sanitation' | 'infrastructure' | 'utilities' | 'traffic' | 'environment' | 'safety' | 'other';
+  category: 'water_supply' | 'sanitation' | 'road_maintenance' | 'street_lighting' | 'drainage' | 'traffic' | 'public_safety' | 'parks_recreation' | 'noise_pollution' | 'air_quality' | 'electricity' | 'other' | 'infrastructure' | 'utilities' | 'environment' | 'safety';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed' | 'rejected';
   reportedBy: mongoose.Schema.Types.ObjectId; // Reference to User
@@ -33,6 +33,11 @@ export interface IIssue extends mongoose.Document {
   }>;
   upvotes: number;
   ward: string;
+  contactInfo?: {
+    phone?: string;
+    preferredContact?: string;
+  } | null;
+  isAnonymous?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -52,7 +57,7 @@ const issueSchema = new mongoose.Schema<IIssue>({
   },
   category: {
     type: String,
-    enum: ['sanitation', 'infrastructure', 'utilities', 'traffic', 'environment', 'safety', 'other'],
+    enum: ['water_supply', 'sanitation', 'road_maintenance', 'street_lighting', 'drainage', 'traffic', 'public_safety', 'parks_recreation', 'noise_pollution', 'air_quality', 'electricity', 'other', 'infrastructure', 'utilities', 'environment', 'safety'],
     required: [true, 'Category is required'],
   },
   priority: {
@@ -153,6 +158,20 @@ const issueSchema = new mongoose.Schema<IIssue>({
     type: String,
     required: [true, 'Ward is required'],
     trim: true,
+  },
+  contactInfo: {
+    phone: {
+      type: String,
+      trim: true,
+    },
+    preferredContact: {
+      type: String,
+      trim: true,
+    },
+  },
+  isAnonymous: {
+    type: Boolean,
+    default: false,
   },
 }, {
   timestamps: true,

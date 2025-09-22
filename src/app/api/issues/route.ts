@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Issue from '@/models/Issue';
+import User from '@/models/User';
 import Analytics from '@/models/Analytics';
 import { withAuth } from '@/lib/middleware';
 import { z } from 'zod';
@@ -49,6 +50,9 @@ const createIssueSchema = z.object({
 async function getIssues(req: NextRequest & { user?: any }) {
   try {
     await connectDB();
+    
+    // Ensure User model is registered for population
+    const UserModel = User;
 
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -91,7 +95,16 @@ async function getIssues(req: NextRequest & { user?: any }) {
     if (priority) query.priority = priority;
     if (department && req.user.role === 'city_admin') query.department = department;
     if (ward && (req.user.role === 'city_admin' || req.user.role === 'regional_admin')) query.ward = ward;
-    if (assignedTo && ['department_admin', 'city_admin'].includes(req.user.role)) query.assignedTo = assignedTo;
+    
+    // Handle assignedTo filter
+    if (assignedTo) {
+      if (assignedTo === 'me') {
+        // Special case: user wants to see issues assigned to them
+        query.assignedTo = req.user.userId;
+      } else if (['department_admin', 'city_admin'].includes(req.user.role)) {
+        query.assignedTo = assignedTo;
+      }
+    }
 
     const skip = (page - 1) * limit;
 

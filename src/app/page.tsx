@@ -1,7 +1,8 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CheckCircle, MapPin, Users, BarChart3, Shield } from "lucide-react";
+import { ArrowRight, CheckCircle, MapPin, Users, BarChart3, Shield, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/feature-card";
@@ -22,6 +23,8 @@ const staggerContainer = {
 };
 
 export default function HomePage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   return (
     <div className="min-h-screen bg-dark-900">
       {/* Navigation */}
@@ -52,14 +55,60 @@ export default function HomePage() {
             
             {/* Mobile menu button */}
             <div className="md:hidden mobile-nav">
-              <Button variant="ghost" size="icon" className="text-gray-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-gray-300"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
               </Button>
             </div>
           </div>
         </div>
+        
+        {/* Mobile menu */}
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden bg-dark-900/95 backdrop-blur-sm border-b border-gray-800/50"
+          >
+            <div className="px-4 py-4 space-y-3">
+              <Link 
+                href="#features" 
+                className="block text-gray-300 hover:text-white font-heading font-medium px-3 py-2 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Features
+              </Link>
+              <Link 
+                href="#how-it-works" 
+                className="block text-gray-300 hover:text-white font-heading font-medium px-3 py-2 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                How it Works
+              </Link>
+              <Link 
+                href="/login" 
+                className="block text-gray-300 hover:text-white font-heading font-medium px-3 py-2 rounded-md transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
+              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button className="btn-primary w-full mt-2">Get Started</Button>
+              </Link>
+            </div>
+          </motion.div>
+        )}
       </nav>
 
       {/* Hero Section */}

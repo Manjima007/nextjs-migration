@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-dev-secret-change-in-production';
 
 export interface JWTPayload {
   userId: string;
@@ -30,7 +30,8 @@ export const generateToken = (payload: JWTPayload): string => {
 
 export const verifyToken = (token: string): JWTPayload | null => {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return decoded as JWTPayload;
   } catch (error) {
     return null;
   }

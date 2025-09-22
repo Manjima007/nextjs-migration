@@ -109,7 +109,7 @@ export default function CityAdminDashboard() {
     if (user) {
       fetchCityData();
     }
-  }, [user, loading, router, fetchCityData]);
+  }, [user, loading, router]); // Removed fetchCityData from dependencies
 
   const calculateStats = (issues: any[]) => {
     const today = new Date().toDateString();

@@ -98,7 +98,7 @@ export default function DepartmentAdminDashboard() {
     if (user) {
       fetchDepartmentData();
     }
-  }, [user, loading, router, fetchDepartmentData]);
+  }, [user, loading, router]); // Removed fetchDepartmentData from dependencies
 
   const calculateStats = (issues: Issue[]) => {
     const today = new Date().toDateString();

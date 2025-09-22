@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -35,6 +36,7 @@ const roleIcons = {
   department_admin: Shield,
   regional_admin: BarChart3,
   city_admin: Users,
+  super_admin: Settings,
 };
 
 const roleColors = {
@@ -43,12 +45,18 @@ const roleColors = {
   department_admin: 'from-purple-500 to-purple-600',
   regional_admin: 'from-indigo-500 to-indigo-600',
   city_admin: 'from-red-500 to-red-600',
+  super_admin: 'from-gray-500 to-gray-600',
 };
 
 export function DashboardLayout({ children, title, description }: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, loading, mounted } = useAuth();
   const router = useRouter();
+
+  // Show loading spinner during initial load
+  if (!mounted || loading) {
+    return <LoadingSpinner fullScreen />;
+  }
 
   if (!user) {
     router.push('/login');
@@ -67,6 +75,7 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
       case 'department_admin': return 'department-admin';
       case 'regional_admin': return 'regional-admin';
       case 'city_admin': return 'city-admin';
+      case 'super_admin': return 'super-admin';
       default: return 'citizen';
     }
   };
@@ -88,11 +97,7 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
         ];
       
       case 'field_worker':
-        return [
-          ...baseItems,
-          { name: 'Assigned Issues', href: '/dashboard/worker/assigned', icon: FileText },
-          { name: 'Work History', href: '/dashboard/worker/history', icon: BarChart3 },
-        ];
+        return baseItems;
       
       case 'department_admin':
         return [
@@ -114,6 +119,14 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
           { name: 'City Overview', href: '/dashboard/city/overview', icon: BarChart3 },
           { name: 'All Departments', href: '/dashboard/city/departments', icon: Shield },
           { name: 'User Management', href: '/dashboard/city/users', icon: Users },
+        ];
+      
+      case 'super_admin':
+        return [
+          ...baseItems,
+          { name: 'System Overview', href: '/dashboard/super-admin', icon: BarChart3 },
+          { name: 'User Management', href: '/dashboard/super-admin/users', icon: Users },
+          { name: 'System Settings', href: '/dashboard/super-admin/settings', icon: Settings },
         ];
       
       default:

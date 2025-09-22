@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description: "Transform your city with intelligent issue tracking, reporting, and resolution. CivicLink connects citizens, field workers, and administrators for efficient civic management.",
   keywords: ["civic management", "issue tracking", "city administration", "smart city", "citizen engagement"],
   authors: [{ name: "CivicLink Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

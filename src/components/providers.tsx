@@ -3,6 +3,8 @@
 import { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/contexts/AuthContext";
+import ClientOnly from "@/components/ClientOnly";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -10,29 +12,31 @@ interface ProvidersProps {
 
 export function Providers({ children }: ProvidersProps) {
   return (
-    <AuthProvider>
-      {children}
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 4000,
-          style: {
-            background: '#1f2937',
-            color: '#f9fafb',
-            border: '1px solid #374151',
-          },
-          success: {
+    <ClientOnly fallback={<LoadingSpinner fullScreen />}>
+      <AuthProvider>
+        {children}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
             style: {
-              border: '1px solid #22c55e',
+              background: '#1f2937',
+              color: '#f9fafb',
+              border: '1px solid #374151',
             },
-          },
-          error: {
-            style: {
-              border: '1px solid #ef4444',
+            success: {
+              style: {
+                border: '1px solid #22c55e',
+              },
             },
-          },
-        }}
-      />
-    </AuthProvider>
+            error: {
+              style: {
+                border: '1px solid #ef4444',
+              },
+            },
+          }}
+        />
+      </AuthProvider>
+    </ClientOnly>
   );
 }

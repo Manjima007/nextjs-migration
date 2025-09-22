@@ -213,7 +213,7 @@ export default function RegionalAdminDashboard() {
     if (user) {
       fetchRegionalData();
     }
-  }, [user, loading, router, fetchRegionalData]);
+  }, [user, loading, router]); // Removed fetchRegionalData from dependencies
 
   const calculateStats = (issues: Issue[]) => {
     const oneWeekAgo = new Date();
@@ -353,28 +353,24 @@ export default function RegionalAdminDashboard() {
             value={stats.totalDepartments}
             icon={<Building className="h-6 w-6" />}
             color="blue"
-            subtitle={`${stats.activeFieldWorkers} active workers`}
           />
           <DashboardStatsCard
             title="Active Issues"
             value={stats.activeIssues}
             icon={<AlertTriangle className="h-6 w-6" />}
             color="yellow"
-            subtitle={`${stats.pendingAssignments} pending assignment`}
           />
           <DashboardStatsCard
             title="Resolved This Week"
             value={stats.resolvedThisWeek}
             icon={<TrendingUp className="h-6 w-6" />}
             color="green"
-            subtitle="↑ 12% from last week"
           />
           <DashboardStatsCard
             title="Avg Response Time"
             value={`${stats.averageResponseTime}h`}
             icon={<Clock className="h-6 w-6" />}
             color="purple"
-            subtitle={`${stats.satisfactionScore}/5.0 satisfaction`}
           />
         </div>
 

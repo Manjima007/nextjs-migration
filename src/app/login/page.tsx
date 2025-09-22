@@ -36,34 +36,41 @@ const staggerContainer = {
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, user, loading } = useAuth();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const { login, user, loading, mounted } = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in
+  // Redirect if already logged in, but with a delay to avoid flashing
   useEffect(() => {
-    if (user && !loading) {
-      // Redirect based on role
-      switch (user.role) {
-        case 'citizen':
-          router.push('/dashboard/citizen');
-          break;
-        case 'field_worker':
-          router.push('/dashboard/field-worker');
-          break;
-        case 'department_admin':
-          router.push('/dashboard/department-admin');
-          break;
-        case 'regional_admin':
-          router.push('/dashboard/regional-admin');
-          break;
-        case 'city_admin':
-          router.push('/dashboard/city-admin');
-          break;
-        default:
-          router.push('/dashboard/citizen');
-      }
+    if (mounted && user && !loading) {
+      // Add a small delay to ensure the page has rendered
+      const redirectTimer = setTimeout(() => {
+        setShouldRedirect(true);
+        // Redirect based on role
+        switch (user.role) {
+          case 'citizen':
+            router.push('/dashboard/citizen');
+            break;
+          case 'field_worker':
+            router.push('/dashboard/field-worker');
+            break;
+          case 'department_admin':
+            router.push('/dashboard/department-admin');
+            break;
+          case 'regional_admin':
+            router.push('/dashboard/regional-admin');
+            break;
+          case 'city_admin':
+            router.push('/dashboard/city-admin');
+            break;
+          default:
+            router.push('/dashboard/citizen');
+        }
+      }, 100);
+
+      return () => clearTimeout(redirectTimer);
     }
-  }, [user, loading, router]);
+  }, [user, loading, mounted, router]);
 
   const {
     register,

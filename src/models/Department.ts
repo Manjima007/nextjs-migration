@@ -30,7 +30,7 @@ const departmentSchema = new mongoose.Schema<IDepartment>({
   },
   categories: [{
     type: String,
-    enum: ['sanitation', 'infrastructure', 'utilities', 'traffic', 'environment', 'safety', 'other'],
+    enum: ['water_supply', 'sanitation', 'road_maintenance', 'street_lighting', 'drainage', 'traffic', 'public_safety', 'parks_recreation', 'noise_pollution', 'air_quality', 'electricity', 'other', 'infrastructure', 'utilities', 'environment', 'safety'],
   }],
   head: {
     type: mongoose.Schema.Types.ObjectId,

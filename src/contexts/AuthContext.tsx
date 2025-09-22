@@ -6,7 +6,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'citizen' | 'field_worker' | 'department_admin' | 'regional_admin' | 'city_admin';
+  role: 'citizen' | 'field_worker' | 'department_admin' | 'regional_admin' | 'city_admin' | 'super_admin';
   phone?: string;
   address?: string;
   department?: string;
@@ -23,6 +23,7 @@ interface AuthContextType {
   register: (userData: any) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   loading: boolean;
+  mounted: boolean;
   updateUser: (userData: Partial<User>) => void;
 }
 
@@ -32,19 +33,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Check for stored token on mount
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('civiclink_token');
-      const storedUser = localStorage.getItem('civiclink_user');
-      
-      if (storedToken && storedUser) {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+    const validateStoredAuth = async () => {
+      if (typeof window !== 'undefined') {
+        const storedToken = localStorage.getItem('civiclink_token');
+        const storedUser = localStorage.getItem('civiclink_user');
+        
+        if (storedToken && storedUser) {
+          try {
+            // Validate token by making a test API call
+            const response = await fetch('/api/auth/validate', {
+              headers: {
+                'Authorization': `Bearer ${storedToken}`
+              }
+            });
+            
+            if (response.ok) {
+              // Token is valid, set user and token
+              setToken(storedToken);
+              setUser(JSON.parse(storedUser));
+            } else {
+              // Token is invalid, clear stored data
+              console.log('Stored token is invalid, clearing auth data');
+              localStorage.removeItem('civiclink_token');
+              localStorage.removeItem('civiclink_user');
+            }
+          } catch (error) {
+            console.error('Error validating stored token:', error);
+            localStorage.removeItem('civiclink_token');
+            localStorage.removeItem('civiclink_user');
+          }
+        }
       }
-    }
-    setLoading(false);
+      setMounted(true);
+      setLoading(false);
+    };
+
+    validateStoredAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
@@ -138,6 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       register,
       logout,
       loading,
+      mounted,
       updateUser,
     }}>
       {children}
