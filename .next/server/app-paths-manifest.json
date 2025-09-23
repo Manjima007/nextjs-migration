@@ -1,10 +1,6 @@
 {
-  "/api/auth/login/route": "app/api/auth/login/route.js",
-  "/api/issues/route": "app/api/issues/route.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/citizen/page": "app/dashboard/citizen/page.js",
-  "/dashboard/field-worker/page": "app/dashboard/field-worker/page.js",
+  "/api/auth/validate/route": "app/api/auth/validate/route.js",
   "/page": "app/page.js",
-  "/dashboard/department-admin/page": "app/dashboard/department-admin/page.js",
-  "/dashboard/city-admin/page": "app/dashboard/city-admin/page.js"
+  "/login/page": "app/login/page.js",
+  "/dashboard/field-worker/page": "app/dashboard/field-worker/page.js"
 }

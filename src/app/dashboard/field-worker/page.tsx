@@ -36,7 +36,7 @@ interface Issue {
 }
 
 export default function FieldWorkerDashboard() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(true);
   const [stats, setStats] = useState({
@@ -47,18 +47,14 @@ export default function FieldWorkerDashboard() {
   });
 
   useEffect(() => {
-    if (user) {
+    if (status === 'authenticated' && user) {
       fetchAssignedIssues();
     }
-  }, [user]);
+  }, [user, status]);
 
   const fetchAssignedIssues = async () => {
     try {
-      const response = await fetch('/api/issues?assignedTo=me', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
-        }
-      });
+      const response = await fetch('/api/issues?assignedTo=me');
       
       if (response.ok) {
         const data = await response.json();
@@ -126,7 +122,7 @@ export default function FieldWorkerDashboard() {
     }
   };
 
-  if (loading) {
+  if (!user) {
     return (
       <DashboardLayout title="Field Worker Dashboard">
         <div className="flex items-center justify-center h-64">

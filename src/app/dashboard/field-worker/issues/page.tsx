@@ -37,7 +37,7 @@ interface Issue {
 }
 
 export default function FieldWorkerIssues() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [filteredIssues, setFilteredIssues] = useState<Issue[]>([]);
   const [isLoadingIssues, setIsLoadingIssues] = useState(true);
@@ -46,10 +46,10 @@ export default function FieldWorkerIssues() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (user) {
+    if (status === 'authenticated' && user) {
       fetchAssignedIssues();
     }
-  }, [user]);
+  }, [user, status]);
 
   useEffect(() => {
     filterIssues();
@@ -57,11 +57,7 @@ export default function FieldWorkerIssues() {
 
   const fetchAssignedIssues = async () => {
     try {
-      const response = await fetch('/api/issues?assignedTo=me', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
-        }
-      });
+      const response = await fetch('/api/issues?assignedTo=me');
       
       if (response.ok) {
         const data = await response.json();
@@ -114,7 +110,6 @@ export default function FieldWorkerIssues() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
         },
         body: JSON.stringify({ status: newStatus })
       });
@@ -147,7 +142,7 @@ export default function FieldWorkerIssues() {
     }
   };
 
-  if (loading) {
+  if (isLoadingIssues) {
     return (
       <DashboardLayout title="My Issues">
         <div className="flex items-center justify-center h-64">

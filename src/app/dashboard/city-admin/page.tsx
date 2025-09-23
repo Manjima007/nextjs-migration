@@ -44,7 +44,7 @@ interface WardPerformance {
 }
 
 export default function CityAdminDashboard() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<CityStats>({
     totalWards: 0,
@@ -64,11 +64,7 @@ export default function CityAdminDashboard() {
   const fetchCityData = useCallback(async () => {
     try {
       // Fetch city-wide issues
-      const issuesResponse = await fetch('/api/issues', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
-        }
-      });
+      const issuesResponse = await fetch('/api/issues');
       
       if (issuesResponse.ok) {
         const issuesData = await issuesResponse.json();
@@ -101,15 +97,14 @@ export default function CityAdminDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'city_admin')) {
+    if (status === 'unauthenticated') {
       router.push('/login');
-      return;
     }
 
-    if (user) {
+    if (status === 'authenticated' && user) {
       fetchCityData();
     }
-  }, [user, loading, router]); // Removed fetchCityData from dependencies
+  }, [user, status, router, fetchCityData]);
 
   const calculateStats = (issues: any[]) => {
     const today = new Date().toDateString();
@@ -138,7 +133,7 @@ export default function CityAdminDashboard() {
     return 'text-red-600 bg-red-100';
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout title="City Admin Dashboard">
         <div className="flex items-center justify-center h-64">

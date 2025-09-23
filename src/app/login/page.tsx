@@ -37,15 +37,35 @@ const staggerContainer = {
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [shouldRedirect, setShouldRedirect] = useState(false);
-  const { login, user, loading, mounted } = useAuth();
+  const { user, loading, mounted, login, logout } = useAuth();
   const router = useRouter();
+
+  // Clear any existing auth data when component mounts
+  useEffect(() => {
+    // If there's an existing user but we're on the login page, it might be a redirect loop
+    // Add a way to break out of it
+    if (user && mounted) {
+      console.log('Existing user found on login page:', user);
+    }
+  }, [user, mounted]);
 
   // Redirect if already logged in, but with a delay to avoid flashing
   useEffect(() => {
     if (mounted && user && !loading) {
+      // Check if there's a 'force' query parameter to bypass redirect
+      const urlParams = new URLSearchParams(window.location.search);
+      const forceLogin = urlParams.get('force') === 'true';
+      
+      if (forceLogin) {
+        // Don't redirect, user wants to force login page
+        console.log('Force login parameter detected, not redirecting');
+        return;
+      }
+      
       // Add a small delay to ensure the page has rendered
       const redirectTimer = setTimeout(() => {
         setShouldRedirect(true);
+        console.log('Redirecting user to dashboard based on role:', user.role);
         // Redirect based on role
         switch (user.role) {
           case 'citizen':
@@ -95,13 +115,12 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success("Welcome back!");
-        // Router redirect will be handled by useEffect above
+        // Redirect will be handled by useEffect
       } else {
-        toast.error(result.error || "Login failed");
+        toast.error(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Login error:', error);
-      toast.error("An unexpected error occurred");
+      toast.error('An unexpected error occurred');
     }
   };
 
@@ -111,13 +130,12 @@ export default function LoginPage() {
       
       if (result.success) {
         toast.success(`Logged in as ${role}`);
-        // Router redirect will be handled by useEffect above
+        // Redirect will be handled by useEffect
       } else {
-        toast.error(result.error || "Demo login failed");
+        toast.error(result.error || 'Login failed');
       }
     } catch (error) {
-      console.error('Demo login error:', error);
-      toast.error("Demo login failed");
+      toast.error('An unexpected error occurred');
     }
   };
 
@@ -141,6 +159,24 @@ export default function LoginPage() {
           
           <h2 className="text-3xl lg:text-4xl font-heading font-bold text-white mb-4">Welcome Back</h2>
           <p className="text-base lg:text-lg text-gray-400 font-body">Sign in to manage civic issues efficiently</p>
+          
+          {/* Clear Session Button - only show if user exists */}
+          {user && (
+            <div className="mt-4 space-y-2">
+              <button
+                onClick={() => {
+                  logout();
+                  toast.success('Session cleared');
+                }}
+                className="block text-red-400 hover:text-red-300 text-sm underline"
+              >
+                Clear current session and login as different user
+              </button>
+              <p className="text-xs text-gray-500">
+                Currently logged in as: {user.name} ({user.role})
+              </p>
+            </div>
+          )}
         </motion.div>
 
         {/* Login Form */}

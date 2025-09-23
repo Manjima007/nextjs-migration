@@ -47,7 +47,7 @@ interface Worker {
 }
 
 export default function DepartmentAdminDashboard() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [stats, setStats] = useState<DepartmentStats>({
     totalWorkers: 0,
@@ -62,11 +62,7 @@ export default function DepartmentAdminDashboard() {
   const fetchDepartmentData = useCallback(async () => {
     try {
       // Fetch department issues
-      const issuesResponse = await fetch(`/api/issues?department=${user?.department}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('civiclink_token')}`
-        }
-      });
+      const issuesResponse = await fetch(`/api/issues?department=${user?.department}`);
       
       if (issuesResponse.ok) {
         const issuesData = await issuesResponse.json();
@@ -90,15 +86,14 @@ export default function DepartmentAdminDashboard() {
   }, [user?.department]);
 
   useEffect(() => {
-    if (!loading && (!user || user.role !== 'department_admin')) {
+    if (status === 'unauthenticated') {
       router.push('/login');
-      return;
     }
 
-    if (user) {
+    if (status === 'authenticated' && user) {
       fetchDepartmentData();
     }
-  }, [user, loading, router]); // Removed fetchDepartmentData from dependencies
+  }, [user, status, router, fetchDepartmentData]);
 
   const calculateStats = (issues: Issue[]) => {
     const today = new Date().toDateString();
@@ -135,7 +130,7 @@ export default function DepartmentAdminDashboard() {
     }
   };
 
-  if (loading || isLoading) {
+  if (isLoading) {
     return (
       <DashboardLayout title="Department Admin Dashboard">
         <div className="flex items-center justify-center h-64">

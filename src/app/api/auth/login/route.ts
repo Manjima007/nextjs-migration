@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
+﻿import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import User from '@/models/User';
-import { comparePassword, generateToken } from '@/lib/auth';
-import { z } from 'zod';
+import User, { IUser } from '@/models/User';
+import { generateToken, comparePassword } from '@/lib/auth';
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB();
+    
+    const { email, password } = await request.json();
 
-    const body = await req.json();
-    const { email, password } = loginSchema.parse(body);
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
+      );
+    }
 
-    // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() }).lean() as IUser | null;
+
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -25,63 +25,50 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if user is active
-    if (!user.isActive) {
-      return NextResponse.json(
-        { error: 'Account has been deactivated. Please contact administrator.' },
-        { status: 403 }
-      );
-    }
+    const isValidPassword = await comparePassword(password, user.password);
 
-    // Verify password
-    const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) {
+    if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
         { status: 401 }
       );
     }
 
-    // Generate JWT token
+    if (!user.isActive) {
+      return NextResponse.json(
+        { error: 'Account is disabled. Please contact administrator.' },
+        { status: 403 }
+      );
+    }
+
     const token = generateToken({
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
       department: user.department,
-      ward: user.ward,
+      ward: user.ward
     });
-
-    // Return user data (without password) and token
-    const userData = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      phone: user.phone,
-      address: user.address,
-      department: user.department,
-      ward: user.ward,
-      profileImage: user.profileImage,
-      isActive: user.isActive,
-      createdAt: user.createdAt,
-    };
-
+    
     return NextResponse.json({
-      message: 'Login successful',
-      user: userData,
-      token,
+      success: true,
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        address: user.address,
+        department: user.department,
+        ward: user.ward,
+        profileImage: user.profileImage,
+        isActive: user.isActive,
+        createdAt: user.createdAt
+      },
+      token
     });
 
   } catch (error) {
     console.error('Login error:', error);
-    
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
