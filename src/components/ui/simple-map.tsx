@@ -27,7 +27,7 @@ function ChangeView({ center, zoom }: { center: [number, number], zoom: number }
   const map = useMap();
   useEffect(() => {
     map.setView(center, zoom);
-  }, [center]); // Only need to re-run when the center changes
+  }, [center, zoom, map]); // Include all dependencies
   return null;
 }
 
@@ -42,7 +42,7 @@ function Map({ latitude, longitude, title, address }: Props) {
     );
   }
 
-  const position: L.LatLngExpression = [latitude, longitude];
+  const position: [number, number] = [latitude, longitude];
 
   return (
     // REMOVED the key prop from this div

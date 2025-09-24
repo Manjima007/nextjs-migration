@@ -1,21 +1,28 @@
 {
-  "..\\node_modules\\next\\dist\\client\\dev\\hot-reloader\\app\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts": {
-    "id": "..\\node_modules\\next\\dist\\client\\dev\\hot-reloader\\app\\use-websocket.js -> @vercel/turbopack-ecmascript-runtime/browser/dev/hmr-client/hmr-client.ts",
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_app": {
+    "id": 5139,
     "files": [
-      "static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js"
+      "static/chunks/139.7a5a8e93a21948c1.js"
+    ]
+  },
+  "..\\node_modules\\next\\dist\\client\\index.js -> ../pages/_error": {
+    "id": 1646,
+    "files": [
+      "static/chunks/646.f342b7cffc01feb0.js"
     ]
   },
   "app\\dashboard\\citizen\\page.tsx -> @/components/ui/issue-location-map": {
-    "id": "app\\dashboard\\citizen\\page.tsx -> @/components/ui/issue-location-map",
+    "id": 4884,
     "files": [
-      "static/chunks/_app-pages-browser_src_components_ui_issue-location-map_tsx.js"
+      "static/chunks/d0deef33.cac6acee3fffe7af.js",
+      "static/chunks/884.6ff3c22d0c5db4e3.js"
     ]
   },
   "components\\ui\\issue-location-map.tsx -> ./simple-map": {
-    "id": "components\\ui\\issue-location-map.tsx -> ./simple-map",
+    "id": 3609,
     "files": [
-      "static/css/_app-pages-browser_src_components_ui_simple-map_tsx.css",
-      "static/chunks/_app-pages-browser_src_components_ui_simple-map_tsx.js"
+      "static/css/55693049b062c6a3.css",
+      "static/chunks/609.62bd53f165cf9652.js"
     ]
   }
 }

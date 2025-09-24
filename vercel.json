@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"],
+  "build": {
+    "env": {
+      "NPM_RC": "//registry.npmjs.org/:_authToken=\n"
+    }
+  }
+}
