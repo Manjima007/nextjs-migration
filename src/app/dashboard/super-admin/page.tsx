@@ -237,7 +237,7 @@ export default function SuperAdminDashboard() {
     if (user) {
       fetchSuperAdminData();
     }
-  }, [user, loading, router]); // Removed fetchSuperAdminData from dependencies
+  }, [user, loading, router, fetchSuperAdminData]);
 
   // Utility functions
   const getRoleColor = (role: string) => {

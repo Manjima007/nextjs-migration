@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -869,9 +870,11 @@ export default function ReportIssuePage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {formData.images.map((file, index) => (
                         <div key={index} className="relative group">
-                          <img
+                          <Image
                             src={URL.createObjectURL(file)}
                             alt={`Upload ${index + 1}`}
+                            width={128}
+                            height={128}
                             className="w-full h-32 object-cover rounded-lg border border-gray-600"
                           />
                           <button
@@ -1011,10 +1014,12 @@ export default function ReportIssuePage() {
                   <h3 className="font-semibold text-white mb-4">Attached Images ({formData.images.length})</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {formData.images.map((file, index) => (
-                      <img
+                      <Image
                         key={index}
                         src={URL.createObjectURL(file)}
                         alt={`Upload ${index + 1}`}
+                        width={96}
+                        height={96}
                         className="w-full h-24 object-cover rounded-lg"
                       />
                     ))}

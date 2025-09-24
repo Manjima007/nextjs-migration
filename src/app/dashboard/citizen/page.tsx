@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import {
   AlertCircle,
   CheckCircle,
@@ -12,18 +13,25 @@ import {
   TrendingUp,
   Calendar
 } from 'lucide-react';
-import Link from 'next/link';
-
-// Import map component dynamically to avoid SSR issues
-const IssueLocationMap = dynamic(
-  () => import('@/components/ui/issue-location-map'),
-  { ssr: false }
-);
+import '@/app/map.css';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/ui/stats-card';
 import { useAuth } from '@/contexts/AuthContext';
 import { apiClient } from '@/lib/api-client';
+
+// Import map component dynamically to avoid SSR issues
+const IssueLocationMap = dynamic(
+  () => import('@/components/ui/issue-location-map'),
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-[300px] bg-gray-100 flex items-center justify-center text-gray-500">
+        Loading map...
+      </div>
+    )
+  }
+);
 
 interface Issue {
   _id: string;
@@ -77,17 +85,13 @@ export default function CitizenDashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
+    if (!user?.id) return;
     try {
       setLoading(true);
-  const response = await apiClient.issues.getAll({ limit: 1000, reportedBy: user?.id });
+      const response = await apiClient.issues.getAll({ limit: 1000, reportedBy: user.id });
       setIssues(response.issues || []);
       
-      // Calculate stats
       const totalIssues = response.pagination?.total || 0;
       const pendingIssues = response.issues?.filter((issue: Issue) => issue.status === 'pending').length || 0;
       const resolvedIssues = response.issues?.filter((issue: Issue) => issue.status === 'resolved').length || 0;
@@ -104,7 +108,11 @@ export default function CitizenDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
@@ -119,9 +127,6 @@ export default function CitizenDashboard() {
       }
     }
   };
-
-  // Force dynamic rendering for the page to avoid hydration issues
-  const dynamic = 'force-dynamic';
 
   return (
     <DashboardLayout
@@ -161,30 +166,10 @@ export default function CitizenDashboard() {
           animate="animate"
           className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 lg:gap-8"
         >
-          <motion.div variants={fadeInUp}>
-            <StatsCard
-              number={stats.totalIssues.toString()}
-              label="Total Issues Reported"
-            />
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <StatsCard
-              number={stats.pendingIssues.toString()}
-              label="Pending Review"
-            />
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <StatsCard
-              number={stats.inProgressIssues.toString()}
-              label="In Progress"
-            />
-          </motion.div>
-          <motion.div variants={fadeInUp}>
-            <StatsCard
-              number={stats.resolvedIssues.toString()}
-              label="Resolved"
-            />
-          </motion.div>
+          <motion.div variants={fadeInUp}><StatsCard number={stats.totalIssues.toString()} label="Total Issues Reported" /></motion.div>
+          <motion.div variants={fadeInUp}><StatsCard number={stats.pendingIssues.toString()} label="Pending Review" /></motion.div>
+          <motion.div variants={fadeInUp}><StatsCard number={stats.inProgressIssues.toString()} label="In Progress" /></motion.div>
+          <motion.div variants={fadeInUp}><StatsCard number={stats.resolvedIssues.toString()} label="Resolved" /></motion.div>
         </motion.div>
 
         {/* Recent Issues */}
@@ -202,19 +187,16 @@ export default function CitizenDashboard() {
               </Button>
             </Link>
           </div>
-
-          {loading ? (
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
+          <div className="space-y-6">
+            {loading ? (
+              [1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse">
                   <div className="h-5 bg-gray-700 rounded w-3/4 mb-3"></div>
                   <div className="h-4 bg-gray-700 rounded w-1/2"></div>
                 </div>
-              ))}
-            </div>
-          ) : issues.length > 0 ? (
-            <div className="space-y-6">
-              {issues.map((issue) => (
+              ))
+            ) : issues.length > 0 ? (
+              issues.map((issue) => (
                 <motion.div
                   key={issue._id}
                   initial={{ opacity: 0, x: -20 }}
@@ -257,19 +239,19 @@ export default function CitizenDashboard() {
                     )}
                   </div>
                 </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <AlertCircle className="w-16 h-16 text-gray-500 mx-auto mb-6" />
-              <p className="text-gray-400 font-body text-lg mb-6">No issues reported yet</p>
-              <Link href="/dashboard/citizen/report">
-                <Button className="mt-4">
-                  Report Your First Issue
-                </Button>
-              </Link>
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <AlertCircle className="w-16 h-16 text-gray-500 mx-auto mb-6" />
+                <p className="text-gray-400 font-body text-lg mb-6">No issues reported yet</p>
+                <Link href="/dashboard/citizen/report">
+                  <Button className="mt-4">
+                    Report Your First Issue
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
         </motion.div>
 
         {/* Community Impact */}

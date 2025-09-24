@@ -1,0 +1,15 @@
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+}
+
+.leaflet-control-container .leaflet-control {
+  z-index: 2;
+}
+
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

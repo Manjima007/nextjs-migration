@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false, // <-- Add this line right here
   images: {
     domains: ['images.unsplash.com', 'via.placeholder.com'],
   },

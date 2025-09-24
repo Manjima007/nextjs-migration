@@ -4,5 +4,18 @@
     "files": [
       "static/chunks/_app-pages-browser_node_modules_next_dist_client_dev_noop-turbopack-hmr_js.js"
     ]
+  },
+  "app\\dashboard\\citizen\\page.tsx -> @/components/ui/issue-location-map": {
+    "id": "app\\dashboard\\citizen\\page.tsx -> @/components/ui/issue-location-map",
+    "files": [
+      "static/chunks/_app-pages-browser_src_components_ui_issue-location-map_tsx.js"
+    ]
+  },
+  "components\\ui\\issue-location-map.tsx -> ./simple-map": {
+    "id": "components\\ui\\issue-location-map.tsx -> ./simple-map",
+    "files": [
+      "static/css/_app-pages-browser_src_components_ui_simple-map_tsx.css",
+      "static/chunks/_app-pages-browser_src_components_ui_simple-map_tsx.js"
+    ]
   }
 }

@@ -64,7 +64,6 @@ const departmentSchema = new mongoose.Schema<IDepartment>({
 });
 
 // Indexes for efficient queries
-departmentSchema.index({ name: 1 });
 departmentSchema.index({ categories: 1 });
 departmentSchema.index({ head: 1 });
 

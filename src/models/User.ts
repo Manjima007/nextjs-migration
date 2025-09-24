@@ -82,7 +82,6 @@ const userSchema = new mongoose.Schema<IUser>({
 });
 
 // Index for efficient queries
-userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ department: 1 });
 userSchema.index({ ward: 1 });

@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   CheckCircle, 
   Clock, 
@@ -36,6 +36,10 @@ interface Issue {
   };
 }
 
+const getLocationString = (location: { address: string; coordinates?: { latitude: number; longitude: number; } }): string => {
+  return location?.address || 'Location not specified';
+};
+
 export default function FieldWorkerIssues() {
   const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -45,17 +49,7 @@ export default function FieldWorkerIssues() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (user) {
-      fetchAssignedIssues();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    filterIssues();
-  }, [issues, statusFilter, priorityFilter, searchQuery]);
-
-  const fetchAssignedIssues = async () => {
+  const fetchAssignedIssues = useCallback(async () => {
     try {
       setIsLoadingIssues(true);
       const token = localStorage.getItem('civiclink_token');
@@ -79,9 +73,15 @@ export default function FieldWorkerIssues() {
     } finally {
       setIsLoadingIssues(false);
     }
-  };
+  }, []);
 
-  const filterIssues = () => {
+  useEffect(() => {
+    if (user) {
+      fetchAssignedIssues();
+    }
+  }, [user, fetchAssignedIssues]);
+
+  const filterIssues = useCallback(() => {
     let filtered = issues;
 
     // Filter by status
@@ -105,13 +105,13 @@ export default function FieldWorkerIssues() {
     }
 
     setFilteredIssues(filtered);
-  };
+  }, [issues, statusFilter, priorityFilter, searchQuery]);
 
-  const getLocationString = (location: { address: string; coordinates?: { latitude: number; longitude: number; } }): string => {
-    return location?.address || 'Location not specified';
-  };
+  useEffect(() => {
+    filterIssues();
+  }, [filterIssues]);
 
-  const updateIssueStatus = async (issueId: string, newStatus: string) => {
+  const updateIssueStatus = useCallback(async (issueId: string, newStatus: string) => {
     try {
       const response = await fetch(`/api/issues/${issueId}`, {
         method: 'PATCH',
@@ -128,7 +128,7 @@ export default function FieldWorkerIssues() {
     } catch (error) {
       console.error('Error updating issue status:', error);
     }
-  };
+  }, [fetchAssignedIssues]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

@@ -97,14 +97,10 @@ export default function CityAdminDashboard() {
   }, []);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    }
-
-    if (status === 'authenticated' && user) {
+    if (user) {
       fetchCityData();
     }
-  }, [user, status, router, fetchCityData]);
+  }, [user, fetchCityData]);
 
   const calculateStats = (issues: any[]) => {
     const today = new Date().toDateString();

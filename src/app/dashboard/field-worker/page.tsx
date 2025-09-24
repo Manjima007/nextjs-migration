@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { DashboardLayout } from '@/components/DashboardLayout';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   CheckCircle, 
   Clock, 
@@ -46,13 +46,7 @@ export default function FieldWorkerDashboard() {
     resolved: 0
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchAssignedIssues();
-    }
-  }, [user, status]);
-
-  const fetchAssignedIssues = async () => {
+  const fetchAssignedIssues = useCallback(async () => {
     try {
       const response = await fetch('/api/issues?assignedTo=me');
       
@@ -74,7 +68,13 @@ export default function FieldWorkerDashboard() {
     } finally {
       setIsLoadingIssues(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchAssignedIssues();
+    }
+  }, [user, fetchAssignedIssues]);
 
   const updateIssueStatus = async (issueId: string, newStatus: string) => {
     try {
