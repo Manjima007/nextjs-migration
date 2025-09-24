@@ -27,12 +27,21 @@ interface DepartmentStats {
 interface Issue {
   _id: string;
   title: string;
-  status: 'pending' | 'in_progress' | 'resolved';
-  priority: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   category: string;
   assignedTo?: {
+    _id: string;
     name: string;
     email: string;
+  };
+  location: {
+    address: string;
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
   };
   createdAt: string;
   updatedAt: string;
@@ -42,8 +51,11 @@ interface Worker {
   _id: string;
   name: string;
   email: string;
-  isActive: boolean;
-  assignedIssues: number;
+  role: string;
+  department: string;
+  ward?: string;
+  isActive?: boolean;
+  assignedIssues?: number;
 }
 
 export default function DepartmentAdminDashboard() {
@@ -61,22 +73,42 @@ export default function DepartmentAdminDashboard() {
 
   const fetchDepartmentData = useCallback(async () => {
     try {
+      setIsLoading(true);
+      const token = localStorage.getItem('civiclink_token');
+      
       // Fetch department issues
-      const issuesResponse = await fetch(`/api/issues?department=${user?.department}`);
+      const issuesResponse = await fetch(`/api/issues?department=${user?.department}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
       
       if (issuesResponse.ok) {
         const issuesData = await issuesResponse.json();
         const issues = issuesData.issues || [];
         setRecentIssues(issues.slice(0, 10));
         calculateStats(issues);
+      } else {
+        console.error('Failed to fetch issues:', await issuesResponse.text());
+        setRecentIssues([]);
       }
 
-      // Fetch department workers (mock for now)
-      setDepartmentWorkers([
-        { _id: '1', name: 'John Smith', email: 'john@contractor.com', isActive: true, assignedIssues: 5 },
-        { _id: '2', name: 'Sarah Johnson', email: 'sarah@contractor.com', isActive: true, assignedIssues: 3 },
-        { _id: '3', name: 'Mike Davis', email: 'mike@contractor.com', isActive: false, assignedIssues: 0 },
-      ]);
+      // Fetch department workers
+      const workersResponse = await fetch(`/api/users?role=field_worker&department=${user?.department}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (workersResponse.ok) {
+        const workersData = await workersResponse.json();
+        setDepartmentWorkers(workersData.users || []);
+      } else {
+        console.error('Failed to fetch workers:', await workersResponse.text());
+        setDepartmentWorkers([]);
+      }
 
     } catch (error) {
       console.error('Error fetching department data:', error);
@@ -86,14 +118,18 @@ export default function DepartmentAdminDashboard() {
   }, [user?.department]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (!user) {
       router.push('/login');
+      return;
+    }
+    
+    if (user.role !== 'department_admin') {
+      router.push('/dashboard/citizen');
+      return;
     }
 
-    if (status === 'authenticated' && user) {
-      fetchDepartmentData();
-    }
-  }, [user, status, router, fetchDepartmentData]);
+    fetchDepartmentData();
+  }, [user, router, fetchDepartmentData]);
 
   const calculateStats = (issues: Issue[]) => {
     const today = new Date().toDateString();

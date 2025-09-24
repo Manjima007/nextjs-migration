@@ -19,13 +19,13 @@ interface Issue {
   description: string;
   location: {
     address: string;
-    coordinates: {
+    coordinates?: {
       latitude: number;
       longitude: number;
     };
-  } | string; // Support both formats for compatibility
-  status: 'pending' | 'in_progress' | 'resolved' | 'rejected';
-  priority: 'low' | 'medium' | 'high';
+  };
+  status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   department: string;
   createdAt: string;
   assignedTo?: string;
@@ -47,7 +47,7 @@ export default function FieldWorkerDashboard() {
   });
 
   useEffect(() => {
-    if (status === 'authenticated' && user) {
+    if (user) {
       fetchAssignedIssues();
     }
   }, [user, status]);
@@ -96,10 +96,7 @@ export default function FieldWorkerDashboard() {
     }
   };
 
-  const getLocationString = (location: { address: string; coordinates: { latitude: number; longitude: number; } } | string): string => {
-    if (typeof location === 'string') {
-      return location;
-    }
+  const getLocationString = (location: { address: string; coordinates?: { latitude: number; longitude: number; } }): string => {
     return location?.address || 'Location not specified';
   };
 

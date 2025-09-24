@@ -40,14 +40,32 @@ export default function LoginPage() {
   const { user, loading, mounted, login, logout } = useAuth();
   const router = useRouter();
 
-  // Clear any existing auth data when component mounts
   useEffect(() => {
-    // If there's an existing user but we're on the login page, it might be a redirect loop
-    // Add a way to break out of it
-    if (user && mounted) {
-      console.log('Existing user found on login page:', user);
+    if (mounted && user) {
+      // If user is already logged in, redirect to their appropriate dashboard
+      const dashboardPath = getDashboardPath(user.role);
+      router.replace(dashboardPath);
     }
-  }, [user, mounted]);
+  }, [user, mounted, router]);
+
+  const getDashboardPath = (role: string) => {
+    switch (role) {
+      case 'citizen':
+        return '/dashboard/citizen';
+      case 'field_worker':
+        return '/dashboard/field-worker';
+      case 'department_admin':
+        return '/dashboard/department-admin';
+      case 'regional_admin':
+        return '/dashboard/regional-admin';
+      case 'city_admin':
+        return '/dashboard/city-admin';
+      case 'super_admin':
+        return '/dashboard/super-admin';
+      default:
+        return '/dashboard/citizen';
+    }
+  };
 
   // Redirect if already logged in, but only after explicit action
   useEffect(() => {

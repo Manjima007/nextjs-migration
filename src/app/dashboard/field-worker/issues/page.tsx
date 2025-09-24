@@ -20,13 +20,13 @@ interface Issue {
   description: string;
   location: {
     address: string;
-    coordinates: {
+    coordinates?: {
       latitude: number;
       longitude: number;
     };
-  } | string; // Support both formats for compatibility
-  status: 'pending' | 'in_progress' | 'resolved' | 'rejected';
-  priority: 'low' | 'medium' | 'high';
+  };
+  status: 'pending' | 'assigned' | 'in_progress' | 'resolved' | 'closed' | 'rejected';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   department: string;
   createdAt: string;
   assignedTo?: string;
@@ -46,10 +46,10 @@ export default function FieldWorkerIssues() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    if (status === 'authenticated' && user) {
+    if (user) {
       fetchAssignedIssues();
     }
-  }, [user, status]);
+  }, [user]);
 
   useEffect(() => {
     filterIssues();
@@ -57,11 +57,21 @@ export default function FieldWorkerIssues() {
 
   const fetchAssignedIssues = async () => {
     try {
-      const response = await fetch('/api/issues?assignedTo=me');
+      setIsLoadingIssues(true);
+      const token = localStorage.getItem('civiclink_token');
+      const response = await fetch('/api/issues?assignedTo=me', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        }
+      });
       
       if (response.ok) {
         const data = await response.json();
         setIssues(data.issues || []);
+      } else {
+        console.error('Failed to fetch issues:', await response.text());
+        setIssues([]);
       }
     } catch (error) {
       console.error('Error fetching issues:', error);
@@ -97,10 +107,7 @@ export default function FieldWorkerIssues() {
     setFilteredIssues(filtered);
   };
 
-  const getLocationString = (location: { address: string; coordinates: { latitude: number; longitude: number; } } | string): string => {
-    if (typeof location === 'string') {
-      return location;
-    }
+  const getLocationString = (location: { address: string; coordinates?: { latitude: number; longitude: number; } }): string => {
     return location?.address || 'Location not specified';
   };
 

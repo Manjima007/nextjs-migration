@@ -25,6 +25,8 @@ class APIClient {
       };
     }
 
+    console.log('API Request:', { url, config }); // Debug log
+
     try {
       const response = await fetch(url, config);
       const data = await response.json();
@@ -60,7 +62,15 @@ class APIClient {
   // Issues methods
   issues = {
     getAll: (params: any = {}) => {
-      const queryString = new URLSearchParams(params).toString();
+      // Convert all parameters to strings for URLSearchParams
+      const stringParams = Object.entries(params).reduce((acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = String(value);
+        }
+        return acc;
+      }, {} as Record<string, string>);
+      
+      const queryString = new URLSearchParams(stringParams).toString();
       return this.request(`/issues${queryString ? `?${queryString}` : ''}`);
     },
 

@@ -63,6 +63,7 @@ async function getIssues(req: NextRequest & { user?: any }) {
     const department = searchParams.get('department');
     const ward = searchParams.get('ward');
     const assignedTo = searchParams.get('assignedTo');
+    const reportedBy = searchParams.get('reportedBy');
 
     // Build query based on user role
     let query: any = {};
@@ -70,7 +71,8 @@ async function getIssues(req: NextRequest & { user?: any }) {
     // Role-based filtering
     switch (req.user.role) {
       case 'citizen':
-        query.reportedBy = req.user.userId;
+        // Use either the reportedBy param or fall back to the user's ID
+        query.reportedBy = reportedBy || req.user.userId;
         break;
       case 'field_worker':
         query.$or = [
@@ -83,6 +85,8 @@ async function getIssues(req: NextRequest & { user?: any }) {
         break;
       case 'regional_admin':
         query.ward = req.user.ward;
+        console.log('Regional admin ward:', req.user.ward); // Debug log
+        console.log('Regional admin query:', query); // Debug log
         break;
       case 'city_admin':
         // Can see all issues
@@ -118,7 +122,10 @@ async function getIssues(req: NextRequest & { user?: any }) {
         .lean(),
       Issue.countDocuments(query)
     ]);
-
+    // Debug log: print issues returned for regional admin
+    if (req.user.role === 'regional_admin') {
+      console.log('Issues returned for regional admin:', issues);
+    }
     return NextResponse.json({
       issues,
       pagination: {
@@ -140,6 +147,13 @@ async function getIssues(req: NextRequest & { user?: any }) {
 
 // POST /api/issues - Create new issue
 async function createIssue(req: NextRequest & { user?: any }) {
+    // Validate citizen ward before creating issue
+    if (!req.user.ward || typeof req.user.ward !== 'string' || req.user.ward.trim() === '') {
+      return NextResponse.json(
+        { error: 'Citizen profile must have a valid ward to create an issue.' },
+        { status: 400 }
+      );
+    }
   try {
     await connectDB();
 
@@ -195,7 +209,7 @@ async function createIssue(req: NextRequest & { user?: any }) {
         },
       },
       images: [], // We'll process images separately for now
-      ward: req.user.ward || 'Ward-1', // Default ward if not specified
+      ward: req.user.ward, // Use the user's ward
       contactInfo: body.isAnonymous ? null : {
         phone: body.contactNumber,
         preferredContact: 'phone'

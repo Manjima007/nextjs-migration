@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
+// Include Leaflet CSS for maps
+import 'leaflet/dist/leaflet.css';
+
 export const metadata: Metadata = {
   title: "CivicLink - Smart Civic Issue Management",
   description: "Transform your city with intelligent issue tracking, reporting, and resolution. CivicLink connects citizens, field workers, and administrators for efficient civic management.",

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,13 +53,20 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
   const { user, logout, loading, mounted } = useAuth();
   const router = useRouter();
 
+  // Handle authentication check in useEffect
+  useEffect(() => {
+    if (mounted && !loading && !user) {
+      router.push('/login');
+    }
+  }, [mounted, loading, user, router]);
+
   // Show loading spinner during initial load
   if (!mounted || loading) {
     return <LoadingSpinner fullScreen />;
   }
 
+  // Don't render anything if user is not authenticated
   if (!user) {
-    router.push('/login');
     return null;
   }
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   AlertCircle,
   CheckCircle,
@@ -12,6 +13,12 @@ import {
   Calendar
 } from 'lucide-react';
 import Link from 'next/link';
+
+// Import map component dynamically to avoid SSR issues
+const IssueLocationMap = dynamic(
+  () => import('@/components/ui/issue-location-map'),
+  { ssr: false }
+);
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { Button } from '@/components/ui/button';
 import { StatsCard } from '@/components/ui/stats-card';
@@ -27,7 +34,11 @@ interface Issue {
   priority: 'low' | 'medium' | 'high' | 'urgent';
   location: {
     address: string;
-  };
+    coordinates?: {
+      latitude: number;
+      longitude: number;
+    };
+  } | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -73,7 +84,7 @@ export default function CitizenDashboard() {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.issues.getAll({ limit: 5 });
+  const response = await apiClient.issues.getAll({ limit: 1000, reportedBy: user?.id });
       setIssues(response.issues || []);
       
       // Calculate stats
@@ -108,6 +119,9 @@ export default function CitizenDashboard() {
       }
     }
   };
+
+  // Force dynamic rendering for the page to avoid hydration issues
+  const dynamic = 'force-dynamic';
 
   return (
     <DashboardLayout
@@ -207,33 +221,40 @@ export default function CitizenDashboard() {
                   animate={{ opacity: 1, x: 0 }}
                   className="p-6 lg:p-8 bg-gray-800/50 rounded-xl border border-gray-600/30 hover:border-primary-500/50 transition-colors cursor-pointer"
                 >
-                  <div className="flex items-start justify-between gap-6">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white mb-3 font-heading text-lg">
-                        {issue.title}
-                      </h3>
-                      <p className="text-base text-gray-400 mb-4 font-body line-clamp-2">
-                        {issue.description}
-                      </p>
-                      <div className="flex items-center space-x-6 text-sm text-gray-500">
-                        <span className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          {issue.location.address}
+                  <div className="space-y-6">
+                    <div className="flex items-start justify-between gap-6">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-3 font-heading text-lg">
+                          {issue.title}
+                        </h3>
+                        <p className="text-base text-gray-400 mb-4 font-body line-clamp-2">
+                          {issue.description}
+                        </p>
+                        <div className="flex items-center space-x-6 text-sm text-gray-500">
+                          <span className="flex items-center">
+                            <MapPin className="w-4 h-4 mr-2" />
+                            {issue.location?.address || 'No location specified'}
+                          </span>
+                          <span className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            {new Date(issue.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end space-y-3">
+                        <span className={`px-3 py-2 rounded-full text-sm font-medium capitalize bg-gray-700 ${statusColors[issue.status]}`}>
+                          {issue.status.replace('_', ' ')}
                         </span>
-                        <span className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(issue.createdAt).toLocaleDateString()}
+                        <span className={`text-sm font-medium capitalize ${priorityColors[issue.priority]}`}>
+                          {issue.priority}
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end space-y-3">
-                      <span className={`px-3 py-2 rounded-full text-sm font-medium capitalize bg-gray-700 ${statusColors[issue.status]}`}>
-                        {issue.status.replace('_', ' ')}
-                      </span>
-                      <span className={`text-sm font-medium capitalize ${priorityColors[issue.priority]}`}>
-                        {issue.priority}
-                      </span>
-                    </div>
+                    {issue.location && (
+                      <div className="mt-4">
+                        <IssueLocationMap location={issue.location} title={issue.title} />
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
