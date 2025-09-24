@@ -49,48 +49,52 @@ export default function LoginPage() {
     }
   }, [user, mounted]);
 
-  // Redirect if already logged in, but with a delay to avoid flashing
+  // Redirect if already logged in, but only after explicit action
   useEffect(() => {
     if (mounted && user && !loading) {
       // Check if there's a 'force' query parameter to bypass redirect
       const urlParams = new URLSearchParams(window.location.search);
       const forceLogin = urlParams.get('force') === 'true';
+      const skipRedirect = urlParams.get('skip') === 'true';
       
-      if (forceLogin) {
-        // Don't redirect, user wants to force login page
-        console.log('Force login parameter detected, not redirecting');
+      if (forceLogin || skipRedirect) {
+        // Don't redirect, user wants to stay on login page
+        console.log('Force/skip login parameter detected, not redirecting');
         return;
       }
       
-      // Add a small delay to ensure the page has rendered
-      const redirectTimer = setTimeout(() => {
-        setShouldRedirect(true);
-        console.log('Redirecting user to dashboard based on role:', user.role);
-        // Redirect based on role
-        switch (user.role) {
-          case 'citizen':
-            router.push('/dashboard/citizen');
-            break;
-          case 'field_worker':
-            router.push('/dashboard/field-worker');
-            break;
-          case 'department_admin':
-            router.push('/dashboard/department-admin');
-            break;
-          case 'regional_admin':
-            router.push('/dashboard/regional-admin');
-            break;
-          case 'city_admin':
-            router.push('/dashboard/city-admin');
-            break;
-          default:
-            router.push('/dashboard/citizen');
-        }
-      }, 100);
-
-      return () => clearTimeout(redirectTimer);
+      // Only redirect if we haven't shown the option to clear session yet
+      // This prevents automatic redirects and gives user control
+      console.log('User already logged in, showing session clear option instead of auto-redirect');
     }
   }, [user, loading, mounted, router]);
+
+  // Function to handle manual redirect after user chooses to continue
+  const handleContinueToDashboard = () => {
+    if (user) {
+      console.log('User chose to continue to dashboard:', user.role);
+      // Redirect based on role
+      switch (user.role) {
+        case 'citizen':
+          router.push('/dashboard/citizen');
+          break;
+        case 'field_worker':
+          router.push('/dashboard/field-worker');
+          break;
+        case 'department_admin':
+          router.push('/dashboard/department-admin');
+          break;
+        case 'regional_admin':
+          router.push('/dashboard/regional-admin');
+          break;
+        case 'city_admin':
+          router.push('/dashboard/city-admin');
+          break;
+        default:
+          router.push('/dashboard/citizen');
+      }
+    }
+  };
 
   const {
     register,
@@ -160,32 +164,41 @@ export default function LoginPage() {
           <h2 className="text-3xl lg:text-4xl font-heading font-bold text-white mb-4">Welcome Back</h2>
           <p className="text-base lg:text-lg text-gray-400 font-body">Sign in to manage civic issues efficiently</p>
           
-          {/* Clear Session Button - only show if user exists */}
+          {/* Session Management - show if user exists */}
           {user && (
-            <div className="mt-4 space-y-2">
-              <button
-                onClick={() => {
-                  logout();
-                  toast.success('Session cleared');
-                }}
-                className="block text-red-400 hover:text-red-300 text-sm underline"
-              >
-                Clear current session and login as different user
-              </button>
-              <p className="text-xs text-gray-500">
-                Currently logged in as: {user.name} ({user.role})
+            <div className="mt-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-xl">
+              <p className="text-blue-300 text-sm mb-3">
+                You are already logged in as: <strong>{user.name}</strong> ({user.role})
               </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={handleContinueToDashboard}
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-lg hover:from-primary-600 hover:to-primary-700 transition-all font-medium"
+                >
+                  Continue to Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    logout();
+                    toast.success('Session cleared');
+                  }}
+                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  Login as Different User
+                </button>
+              </div>
             </div>
           )}
         </motion.div>
 
-        {/* Login Form */}
-        <motion.div
-          variants={fadeInUp}
-          initial="initial"
-          animate="animate"
-          className="glass-light rounded-2xl p-8 lg:p-10 shadow-2xl border border-gray-700/50"
-        >
+        {/* Login Form - show if no user is logged in OR if forced */}
+        {(!user || (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('force') === 'true')) && (
+          <motion.div
+            variants={fadeInUp}
+            initial="initial"
+            animate="animate"
+            className="glass-light rounded-2xl p-8 lg:p-10 shadow-2xl border border-gray-700/50"
+          >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 lg:space-y-8">
             <div>
               <Input
@@ -298,6 +311,7 @@ export default function LoginPage() {
             </p>
           </div>
         </motion.div>
+        )}
 
         {/* Features Preview */}
         <motion.div
