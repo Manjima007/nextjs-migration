@@ -1,11 +1,3 @@
 {
-  "/api/issues/route": "app/api/issues/route.js",
-  "/api/auth/validate/route": "app/api/auth/validate/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/citizen/page": "app/dashboard/citizen/page.js",
-  "/dashboard/citizen/report/page": "app/dashboard/citizen/report/page.js",
-  "/dashboard/field-worker/page": "app/dashboard/field-worker/page.js",
-  "/page": "app/page.js",
-  "/dashboard/department-admin/page": "app/dashboard/department-admin/page.js"
+  "/page": "app/page.js"
 }
